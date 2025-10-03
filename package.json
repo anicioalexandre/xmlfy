@@ -1,0 +1,46 @@
+{
+  "name": "xmlfy",
+  "displayName": "XMLfy",
+  "version": "0.0.1",
+  "description": "A browser extension that provides XML tag auto-completion in most web input fields.",
+  "author": "Alexandre Anicio",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "@webcomponents/custom-elements": "1.6.0",
+    "lit": "3.3.1",
+    "plasmo": "0.90.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "styled-components": "6.1.19"
+  },
+  "devDependencies": {
+    "@swc/types": "^0.1.25",
+    "@trivago/prettier-plugin-sort-imports": "4.3.0",
+    "@types/chrome": "0.1.14",
+    "@types/node": "20.11.5",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
+    "@types/styled-components": "5.1.34",
+    "prettier": "3.2.4",
+    "typescript": "5.3.3"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://*/*"
+    ],
+    "permissions": [
+      "storage",
+      "windows",
+      "http://*/*",
+      "https://*/*"
+    ],
+    "background": {
+      "service_worker": "background.ts",
+      "type": "module"
+    }
+  }
+}
