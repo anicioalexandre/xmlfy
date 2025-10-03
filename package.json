@@ -30,13 +30,11 @@
   },
   "manifest": {
     "host_permissions": [
+      "http://*/*",
       "https://*/*"
     ],
     "permissions": [
-      "storage",
-      "windows",
-      "http://*/*",
-      "https://*/*"
+      "storage"
     ],
     "background": {
       "service_worker": "background.ts",
