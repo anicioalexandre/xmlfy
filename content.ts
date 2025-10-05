@@ -39,7 +39,7 @@ const xmlfy = (() => {
     if (!element) return null
 
     if (element.isContentEditable) {
-      return element.innerText
+      return element.textContent
     }
 
     if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
@@ -51,15 +51,26 @@ const xmlfy = (() => {
 
   const getCursorOffset = (event: InputEvent): number | undefined => {
     const element = event.target as HTMLElement
-
-    // For contenteditable elements, use getTargetRanges
     if (element.isContentEditable) {
-      const range = event.getTargetRanges()[0]
-      return range?.startOffset
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return undefined
+
+      const range = selection.getRangeAt(0)
+
+      // Create a range from the start of the element to the cursor
+      const preCaretRange = document.createRange()
+      preCaretRange.selectNodeContents(element)
+      preCaretRange.setEnd(range.endContainer, range.endOffset)
+
+      // Get the text content which properly handles newlines
+      const preCaretText = preCaretRange.cloneContents().textContent || ''
+      const offset = preCaretText.length
+      return offset
     }
-    // For textarea and input elements, use selectionStart
+    // For textarea and input elements, selectionStart already gives absolute position
     else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-      return element.selectionStart ?? undefined
+      const offset = element.selectionStart ?? 0
+      return offset
     }
 
     return undefined
@@ -73,7 +84,8 @@ const xmlfy = (() => {
     const offset = getCursorOffset(event)
     if (offset === undefined) return null
 
-    const startPos = Math.max(0, offset - 50)
+    const MAX_XML_TAG_LENGTH = 50
+    const startPos = Math.max(0, offset - MAX_XML_TAG_LENGTH)
     const searchString = value.slice(startPos, offset)
 
     const xmlTagRegex = /<([a-zA-Z_][\w\-.:]*)\s*>?$/
@@ -95,21 +107,36 @@ const xmlfy = (() => {
       currentValue.slice(0, insertPosition) + insertText + currentValue.slice(insertPosition)
 
     if (element.isContentEditable) {
-      element.focus()
-      element.textContent = newValue
+      // Instead of replacing textContent, insert at cursor position
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return newValue
 
-      // Set cursor position for contenteditable elements
+      const range = selection.getRangeAt(0)
+
+      // Delete any selected content first
+      range.deleteContents()
+
+      // Create a text node with our insert text
+      const textNode = document.createTextNode(insertText)
+      range.insertNode(textNode)
+
+      // Position cursor after the inserted text
       if (cursorPosition !== undefined) {
-        const range = document.createRange()
-        const sel = window.getSelection()
-        const textNode = element.firstChild
+        // Calculate position relative to the inserted text
+        const insertedLength = insertText.length
+        const cursorOffset = cursorPosition - insertPosition
 
-        if (textNode && sel) {
-          range.setStart(textNode, Math.min(cursorPosition, textNode.textContent?.length || 0))
-          range.collapse(true)
-          sel.removeAllRanges()
-          sel.addRange(range)
+        if (cursorOffset >= 0 && cursorOffset <= insertedLength) {
+          range.setStart(textNode, cursorOffset)
+          range.setEnd(textNode, cursorOffset)
+        } else {
+          // Position after the inserted text
+          range.setStartAfter(textNode)
+          range.setEndAfter(textNode)
         }
+
+        selection.removeAllRanges()
+        selection.addRange(range)
       }
 
       element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }))
@@ -144,7 +171,6 @@ const xmlfy = (() => {
   const watchValue = (event: InputEvent) => {
     const data = event.data
     const offset = getCursorOffset(event)
-
     if (data === '>') {
       const xmlTag = identifyPotentialXMLTag(event)
       if (xmlTag) {

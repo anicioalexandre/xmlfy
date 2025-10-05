@@ -16,7 +16,7 @@ export const Container = styled.div<{ $route: Routes }>`
   height: max-content;
   height: ${(props) => {
     if (props.$route === ROUTE.settings) {
-      return '90px'
+      return '100px'
     }
     return '100px'
   }};
@@ -40,10 +40,15 @@ export const Container = styled.div<{ $route: Routes }>`
   }
 `
 
-export const IconButtonsContainer = styled.div`
+export const LogoContainer = styled.div`
   align-items: center;
   display: grid;
-  grid-template-columns: auto 1fr;
+  justify-content: center;
+`
+
+export const Logo = styled.img`
+  height: 32px;
+  width: 32px;
 `
 
 export const RoutesContainer = styled.div`

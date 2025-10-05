@@ -1,22 +1,20 @@
 import { useEffect, useState } from 'react'
 
-import IconButton from 'components/design-system/IconButton'
-import Text from 'components/design-system/Text'
-import BackIcon from 'components/design-system/icons/BackIcon'
-import CloseIcon from 'components/design-system/icons/CloseIcon'
-import SettingsIcon from 'components/design-system/icons/SettingsIcon'
+
+import Icon from 'assets/icon.png'
+import IconLight from 'assets/icon_light.png'
 import { XMLFY_INTERFACE_CLOSE } from 'constants/events'
 import { ROUTE } from 'constants/route'
 import type { Routes } from 'types/route'
 import { getXMLfyElement } from 'utils/dom'
 import { getXMLfySettings } from 'utils/settings'
-
 import Settings from './Settings'
-import { Container, IconButtonsContainer, RoutesContainer } from './styled'
+import { Container, Logo, LogoContainer, RoutesContainer } from './styled'
+import useSettings from 'hooks/useSettings'
 
 const XMLfyInterface = () => {
   const [route, _setRoute] = useState<Routes>(ROUTE.settings)
-
+  const { settings } = useSettings()
   const xmlfyElement = getXMLfyElement()
 
   const handleInterfaceClose = () => {
@@ -49,14 +47,9 @@ const XMLfyInterface = () => {
 
   return (
     <Container $route={route}>
-      <IconButtonsContainer>
-        <IconButton onClick={handleInterfaceClose} style={{ zIndex: 1 }}>
-          <CloseIcon />
-        </IconButton>
-        <Text $variant="h1" style={{ marginLeft: '-24px' }}>
-          XMLfy
-        </Text>
-      </IconButtonsContainer>
+      <LogoContainer>
+        <Logo src={settings.themeMode === 'dark' ? Icon : IconLight} alt="XMLfy logo" />
+      </LogoContainer>
       <RoutesContainer>
         {isSettingsRoute && <Settings isVisible={isSettingsRoute} />}
       </RoutesContainer>
